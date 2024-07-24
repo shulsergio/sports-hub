@@ -106,3 +106,34 @@ async function globalTableCreate(id, season_number) {
   HtmltableList.insertAdjacentHTML("afterend", tableMarkup);
 }
 // globalTableCreate("1a8afb27a4db853c", "3");
+
+async function onGetListMatchesbyDay() {
+  let globalData = [];
+  //   for (let i = 1; i < 15; i++) {
+  try {
+    const data = await onGetJsonData(
+      `https://soccer-football-info.p.rapidapi.com/matches/day/basic/?d=20240719` //p=${i}&
+    );
+    const pageData = data.result
+      .map((item) => ({
+        champID: item.championship.id,
+        champ: item.championship.name,
+        teamA: item.teamA.name,
+        teamB: item.teamB.name,
+        scoreTeamA: item.teamA.score.f,
+        scoreTeamB: item.teamB.score.f,
+      }))
+      .filter((item) => item.champID === "1a8afb27a4db853c");
+    console.log(data);
+    console.log("pageData");
+    console.log(pageData);
+    //   if (pageData.length>0) {
+    globalData = globalData.concat(pageData);
+    //   }
+  } catch (err) {
+    console.error(err);
+  }
+  console.log("globalData");
+  console.log(globalData);
+}
+onGetListMatchesbyDay();
