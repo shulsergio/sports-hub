@@ -1,6 +1,7 @@
 import {
   onGetListMatchesbyPASTDay,
   onGetListMatchesbyTODAY,
+  onGetMatchByID,
   onGetTableAllChampionatByID,
 } from "./functions.js";
 import { onHtmlMarkupTableCreated } from "./marckup.js";
@@ -41,4 +42,6 @@ async function globalTableCreate(id, season_number) {
 }
 // globalTableCreate("1a8afb27a4db853c", "3");
 
-onGetListMatchesbyTODAY();
+// onGetListMatchesbyTODAY("today");
+// onGetListMatchesbyPASTDay("prevday");
+// onGetMatchByID("96297dc482aa49d1");

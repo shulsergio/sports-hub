@@ -19,7 +19,7 @@ const onboardChamionats = [
   "ded6711698a1ee0f",
   "f0644ed72e7c6a5c",
   "a0d28d6b99d45e79",
-  //   "c83eefc39f2126bd", //,бразилия
+  "c83eefc39f2126bd", //,бразилия
   "629922a461b62755", // olimpiada
 ];
 const options = {
@@ -35,6 +35,20 @@ async function onGetJsonData(fetchData) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
   return await response.json();
+}
+
+function getFormatDay(getDay) {
+  let day = 0;
+  const year = String(new Date().getFullYear());
+  const month = String(new Date().getMonth() + 1).padStart(2, "0");
+  if (getDay === "today") {
+    day = String(new Date().getDate()).padStart(2, "0");
+  } else if (getDay === "prevday") {
+    day = String(new Date().getDate() - 1).padStart(2, "0");
+  } else if (getDay === "futureday") {
+    day = String(new Date().getDate() + 1).padStart(2, "0");
+  }
+  return `${year}${month}${day}`;
 }
 
 export async function onGetTableAllChampionatByID(id, season_number) {
@@ -66,24 +80,29 @@ export async function onGetTableAllChampionatByID(id, season_number) {
   return table;
 }
 
-export async function onGetListMatchesbyPASTDay(date) {
+export async function onGetListMatchesbyPASTDay(day) {
+  const date = getFormatDay(day);
   let globalData = [];
+  console.log("date=", date);
   try {
     const data = await onGetJsonData(
       `https://soccer-football-info.p.rapidapi.com/matches/day/basic/?d=${date}`
     );
-    const pageData = data.result.map((item) => ({
-      champID: item.championship.id,
-      champ: item.championship.name,
-      teamA: item.teamA.name,
-      teamB: item.teamB.name,
-      scoreTeamA: item.teamA.score.f,
-      scoreTeamB: item.teamB.score.f,
-    }));
-    //   .filter((item) => item.champID === "1a8afb27a4db853c"); // чемпионат
+    console.log("data");
     console.log(data);
-    console.log("pageData");
-    console.log(pageData);
+    const pageData = data.result
+      .map((item) => ({
+        champNewID: Number(item.championship.id.replace(/\D/g, "")),
+        champID: item.championship.id,
+        champ: item.championship.name,
+        MatchID: item.id,
+        matchStatus: item.status,
+        teamA: item.teamA.name,
+        teamB: item.teamB.name,
+        scoreTeamA: item.teamA.score.f,
+        scoreTeamB: item.teamB.score.f,
+      }))
+      .filter((item) => onboardChamionats.includes(item.champID)); // чемпионат
     globalData = globalData.concat(pageData);
   } catch (err) {
     console.error(err);
@@ -92,15 +111,12 @@ export async function onGetListMatchesbyPASTDay(date) {
   console.log(globalData);
 }
 
-export async function onGetListMatchesbyTODAY() {
-  const year = String(new Date().getFullYear());
-  const month = String(new Date().getMonth() + 1).padStart(2, "0");
-  const day = String(new Date().getDate()).padStart(2, "0");
-  const date = `${year}${month}${day}`;
-  console.log(`${year}${month}${day}`);
+export async function onGetListMatchesbyTODAY(day) {
+  const date = getFormatDay(day);
   let globalData = [];
   let totalItem = 0;
-  for (let i = 1; i < 50; i++) {
+  console.log("onGetListMatchesbyTODAY, date=", date);
+  for (let i = 1; i < 10; i++) {
     totalItem = totalItem + 25;
     try {
       const data = await onGetJsonData(
@@ -121,9 +137,6 @@ export async function onGetListMatchesbyTODAY() {
         }))
         .toSorted((a, b) => b.champNewID - a.champNewID)
         .filter((item) => onboardChamionats.includes(item.champID));
-      console.log(data);
-      console.log("pageData");
-      console.log(pageData);
       console.log("data.result.pagination[0].items");
       console.log(data.pagination[0].items);
       globalData = globalData.concat(pageData);
@@ -136,4 +149,16 @@ export async function onGetListMatchesbyTODAY() {
   }
   console.log("globalData");
   console.log(globalData);
+}
+
+export async function onGetMatchByID(ID) {
+  try {
+    const data = await onGetJsonData(
+      `https://soccer-football-info.p.rapidapi.com/matches/view/basic/?i=${ID}` //p=${i}&
+    );
+
+    console.log("message= ", data);
+  } catch (err) {
+    console.error(err);
+  }
 }
